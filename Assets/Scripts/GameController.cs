@@ -15,6 +15,7 @@ public class GameController : MonoBehaviour
     private InputAction move;
     private InputAction restart;
     private InputAction quit;
+    private InputAction launchBall;
 
     // setting a flag/boolean to check condition of an action
     private bool isPaddleMoving;
@@ -44,6 +45,7 @@ public class GameController : MonoBehaviour
         move = playerInput.currentActionMap.FindAction("MovePaddle");
         restart = playerInput.currentActionMap.FindAction("RestartGame");
         quit = playerInput.currentActionMap.FindAction("QuitGame");
+        launchBall = playerInput.currentActionMap.FindAction("LaunchBall");
 
         // .started/.canceled: it's an action that tells me when a certain
         // action has happened in the game... it's a listener
@@ -51,6 +53,7 @@ public class GameController : MonoBehaviour
         move.canceled += Move_canceled;
         restart.started += Restart_started;
         quit.started += Quit_started;
+        launchBall.started += LaunchBall_started;
 
         isPaddleMoving = false;
         // I highlighted everything, right click, Quick Actions and
@@ -63,6 +66,11 @@ public class GameController : MonoBehaviour
 
         
 
+    }
+
+    private void LaunchBall_started(InputAction.CallbackContext obj)
+    {
+        ball.LaunchBall();
     }
 
     public void UpdateScore()
