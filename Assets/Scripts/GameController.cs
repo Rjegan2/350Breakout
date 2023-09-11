@@ -2,8 +2,10 @@ using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.SearchService;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -33,8 +35,13 @@ public class GameController : MonoBehaviour
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private int score;
     [SerializeField] private TMP_Text endGameText;
+    [SerializeField] private TMP_Text livesText;
+    private int lives;
 
-    private BallController ball;
+    private BallController ballController;
+
+    [SerializeField] private TMP_Text restartText;
+    [SerializeField] private TMP_Text launchText;
 
     // Start is called before the first frame update
     void Start()
@@ -62,7 +69,16 @@ public class GameController : MonoBehaviour
 
         endGameText.gameObject.SetActive(false);
 
-        ball = GameObject.FindObjectOfType<BallController>();
+        ballController = GameObject.FindObjectOfType<BallController>();
+
+        lives = 3;
+        livesText.text = "Lives: " + lives.ToString();
+        scoreText.text = "Score: " + score.ToString();
+
+        restartText.gameObject.SetActive(false);
+
+        launchText.gameObject.SetActive(true);
+
 
         
 
@@ -70,7 +86,8 @@ public class GameController : MonoBehaviour
 
     private void LaunchBall_started(InputAction.CallbackContext obj)
     {
-        ball.LaunchBall();
+        ballController.LaunchBall();
+        launchText.gameObject.SetActive(false);
     }
 
     public void UpdateScore()
@@ -82,7 +99,9 @@ public class GameController : MonoBehaviour
         {
             endGameText.text = "You Win";
             endGameText.gameObject.SetActive(true);
-            ball.ResetBall();
+            ballController.StopBall();
+            paddle.SetActive(false);
+            restartText.gameObject.SetActive(true);
         }
     }
 
@@ -112,12 +131,13 @@ public class GameController : MonoBehaviour
 
     private void Quit_started(InputAction.CallbackContext obj)
     {
-        
+        Application.Quit();
     }
 
     private void Restart_started(InputAction.CallbackContext obj)
     {
-        
+        SceneManager.LoadScene(0);
+        restartText.gameObject.SetActive(false);
     }
 
     // When the move has started (I started pressing a button)
@@ -149,5 +169,31 @@ public class GameController : MonoBehaviour
         {
             moveDirection = move.ReadValue<float>();
         }
+    }
+
+    public void LoseLife()
+    {
+        lives--;
+        livesText.text = "Lives: " + lives.ToString();
+        launchText.gameObject.SetActive(true);
+
+        if(lives == 0)
+        {
+            endGameText.text = "You Lose";
+            endGameText.gameObject.SetActive(true);
+            ballController.StopBall();
+            paddle.SetActive(false);
+            restartText.gameObject.SetActive(true);
+
+        }
+    }
+
+    public void OnDestroy()
+    {
+        move.started -= Move_Started;
+        move.canceled -= Move_canceled;
+        restart.started -= Restart_started;
+        quit.started -= Quit_started;
+        launchBall.started -= LaunchBall_started;
     }
 }
